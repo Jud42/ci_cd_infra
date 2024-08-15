@@ -1,0 +1,53 @@
+---
+# tasks file for ansible/roles/tls_certificate
+
+- name: Installation python
+  yum:
+    name: "python3"
+    state: latest
+
+- name: Upgrade pip
+  pip:
+    name: pip
+    extra_args: --user --upgrade
+  
+- name: Upgrade setuptools & cryptography
+  pip:
+    name:
+      - setuptools
+      - cryptography
+    extra_args: --user --upgrade
+
+# - name: Installation requires packages for community.crypto.openssl_csr
+#   pip:
+#     name: 
+#       - pip
+#       - setuptools
+#       - cryptography
+#     state: forcereinstall
+
+- name: Create certificate directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - "{{ cert_dir }}"
+    - "{{ pkey_dir }}"
+
+- name: Create private key (RSA, 4096 bits)
+  community.crypto.openssl_privatekey:
+    path: "{{ pkey_dir  }}/{{ pkey_name }}.key"
+
+- name: Generate an OpenSSL Certificate Signing Request
+  community.crypto.openssl_csr:
+    path: "{{ cert_dir  }}/{{ csr_name }}.pem"
+    privatekey_path: "{{ pkey_dir  }}/{{ pkey_name }}.key"
+    common_name: jd.tuto.com
+
+- name: Create self-signed certificate from CSR
+  community.crypto.x509_certificate:
+    path: "{{ cert_dir  }}/{{ cert_name }}.pem"
+    csr_path: "{{ cert_dir  }}/{{ csr_name }}.pem"
+    privatekey_path: "{{ pkey_dir  }}/{{ pkey_name }}.key"
+    provider: selfsigned

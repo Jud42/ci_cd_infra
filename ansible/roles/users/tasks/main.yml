@@ -1,0 +1,16 @@
+---
+
+- name: create user devops
+  user:
+    name: devops
+    shell: /bin/bash
+    #groups: sudo
+    #append: true
+    password: "{{ 'pass' | password_hash }}"
+
+- name: deploy SSH key pub
+  authorized_key:
+    user: devops
+    key: "{{ lookup('file', '/var/jenkins_home/.ssh/id_rsa.pub') }}"
+    state: present
+    

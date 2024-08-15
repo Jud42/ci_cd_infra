@@ -1,0 +1,17 @@
+---
+# vars file for ansible/roles/tomcat
+
+#java_version: "java-11-openjdk-devel"
+#version: "apache-tomcat-9.0.93"
+#url: "https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.93/bin/apache-tomcat-9.0.93.zip"
+#artifact: springtomcat.war
+artifact: demo-0.0.1-SNAPSHOT.war
+java_version: "java-17-openjdk-devel"
+version: "apache-tomcat-10.1.28"
+url: "https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.28/bin/apache-tomcat-10.1.28.zip"
+dir_installation: "/opt/tomcat"
+dir_exec: "/opt/tomcat/bin"
+dir_conf: "/opt/tomcat/conf"
+dir_apps: "/opt/tomcat/webapps"
+dir_hostmanager_context: "/opt/tomcat/webapps/host-manager/META-INF"
+dir_manager_context: "/opt/tomcat/webapps/manager/META-INF"
