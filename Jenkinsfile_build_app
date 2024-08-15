@@ -1,0 +1,72 @@
+pipeline {
+    agent any
+
+    tools {
+        // Install the Maven version configured as "M3" and add it to the path.
+        maven "M3"
+    }
+
+    stages {
+        
+        stage('SCM checkout') {
+            
+            steps {
+                checkout scmGit(branches: [[name: '*/java_app']],
+                    extensions: [], 
+                    userRemoteConfigs: [[credentialsId: 'git-pat', url: 'https://github.com/Jud42/ci_cd_infra.git']])
+            }
+        }
+        
+        stage('Build') {
+            
+            steps {
+                sh "mvn -B -Dmaven.test.skip=true clean package"
+                stash name: "artifact", includes: "**/target/*.war"
+            }
+        }
+        
+        stage('Unit Tests') {  
+            
+            steps {
+                sh "mvn -B clean test"
+                stash name: "unit_tests", includes: "target/surefire-reports/**"
+            }
+        }
+        
+        stage('Integration Tests') {
+            
+            steps {
+                sh "mvn -B clean verify -Dsurefire.skip=true"
+                stash name: 'it_tests', includes: 'target/failsafe-reports/**'
+            }
+        }
+        
+        //stage('Static Analysis') {
+        //    
+        //    steps {
+        //        withSonarQubeEnv('sonar'){
+        //            unstash 'it_tests'
+        //            unstash 'unit_tests'
+        //            sh 'mvn sonar:sonar -DskipTests'
+        //        }
+        //    }
+        //}
+        
+        stage('Artifacts upload') {
+            steps {
+                unstash 'artifact'
+            }
+            
+            post {
+                
+                success {
+                    
+                    archiveArtifacts    artifacts: 'target/*.war',
+                                        allowEmptyArchive: true,
+                                        fingerprint: true,
+                                        onlyIfSuccessful: true
+                }
+            }
+        }
+    }
+}

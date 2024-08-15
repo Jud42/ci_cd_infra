@@ -1,0 +1,19 @@
+pipeline {
+    
+    agent any
+    
+    stages {
+        
+        stage('Retrieve artifact') {
+           
+            steps {
+                copyArtifacts   projectName: 'build_app',
+                                filter: 'target/demo-0.0.1-SNAPSHOT.war',
+                                target: 'target/',
+                                fingerprintArtifacts: true
+                                //selector: specific(env.BUILD_NUMBER)
+            }
+        }
+    }
+}
+
