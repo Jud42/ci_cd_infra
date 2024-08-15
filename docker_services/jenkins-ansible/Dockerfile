@@ -2,6 +2,9 @@ FROM jenkins/jenkins:2.462.1-jdk17
 USER root
 RUN apt-get update && apt-get install -y lsb-release ansible-core sshpass
 
+RUN chown -R jenkins:jenkins /var/jenkins_home
+RUN chmod -R 770 jenkins:jenkins /var/jenkins_home/ansible
+
 # _certificat module ssl/tls
 RUN ansible-galaxy collection install community.crypto
 
