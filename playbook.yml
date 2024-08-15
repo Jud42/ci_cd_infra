@@ -1,0 +1,32 @@
+- name: installation ssh
+  connection: local
+  hosts: localhost
+  roles:
+  - ssh_keygen
+
+- name: creation user for all server
+  hosts: all
+  remote_user: root
+  #become: yes
+  roles:
+  - users
+
+- name: "SSL/TLS Certificates create"
+  hosts: nginx
+  remote_user: root
+  roles:
+  - tls_certificate
+
+- name: installation nginx
+  hosts: nginx
+  remote_user: root
+  #become: yes
+  roles:
+  - nginx
+
+- name: installation webserver
+  hosts: webserver
+  remote_user: root
+  #become: yes
+  roles:
+  - tomcat
