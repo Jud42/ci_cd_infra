@@ -1,11 +1,18 @@
 pipeline {
+    
     agent any
 
-    tools {
-        // Install the Maven version configured as "M3" and add it to the path.
-        maven "M3"
+    options {
+        // This is required if you want to clean before build
+        skipDefaultCheckout(true)
     }
+    
+    tools { maven "M3" }
 
+    parameters {
+        string(name: 'BUILD_NUMBER', defaultValue: '', description: 'Build number of the first pipeline job')
+    }
+    
     stages {
         
         stage('SCM checkout') {
@@ -68,5 +75,29 @@ pipeline {
                 }
             }
         }
+        
+         stage('Trigger Deploy Job') {
+            when {
+                expression {
+                    return currentBuild.result == 'SUCCESS'
+                }
+            }
+            steps {
+                build job: 'deploy_app', parameters: [string(name: 'BUILD_APP_ID', value: "${env.BUILD_NUMBER}")]
+            }
+        }
+        
+    }
+    
+    post {
+            // Clean after build
+            always {
+                cleanWs(cleanWhenNotBuilt: false,
+                        deleteDirs: true,
+                        disableDeferredWipeout: true,
+                        notFailBuild: true,
+                        patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
+                                   [pattern: '.propsfile', type: 'EXCLUDE']])
+            }
     }
 }

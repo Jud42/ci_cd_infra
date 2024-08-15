@@ -2,6 +2,13 @@ pipeline {
     
     agent any
     
+    parameters {
+        string(name: 'BUILD_APP_ID', defaultValue: '', description: 'Build number of the build job')
+    }
+    
+    environment {
+        ANSIBLE_PLAYBOOK_PATH = "${env.HOME}/ansible"
+    }
     stages {
         
         stage('Retrieve artifact') {
@@ -11,7 +18,15 @@ pipeline {
                                 filter: 'target/demo-0.0.1-SNAPSHOT.war',
                                 target: 'target/',
                                 fingerprintArtifacts: true
-                                //selector: specific(env.BUILD_NUMBER)
+                                selector: specific('${FIRST_PIPELINE_BUILD_NUMBER}')
+            }
+        }
+        
+        stage('Deploy') {
+            
+            steps {
+                echo "path to home ===> ${ANSIBLE_PLAYBOOK_PATH}"
+                sh "cp *.war ${ANSIBLE_PLAYBOOK_PATH/ro}"
             }
         }
     }
