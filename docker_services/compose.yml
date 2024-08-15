@@ -15,7 +15,7 @@ services:
   jenkins:
     container_name: jenkins-ansible-container
     build:
-      context: jenkins/
+      context: jenkins-ansible/
       dockerfile: Dockerfile
     networks:
       - jenkins
@@ -36,7 +36,7 @@ services:
 
   nginx:
     build:
-      context: nginx
+      context: nginx-reverse/
       dockerfile: Dockerfile
     container_name: nginx-container
     expose:
@@ -49,7 +49,7 @@ services:
   
   webserv:
     build:
-      context: webserv
+      context: tomcat-webserv/
       dockerfile: Dockerfile
     container_name: webserv-container
     expose:

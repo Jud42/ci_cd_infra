@@ -15,19 +15,22 @@ print_help() {
 }
 
 run_() {
+    
+    if [ -f $INFO_INFRA ]; then
+        rm $INFO_INFRA
+    fi
     docker compose -f $COMPOSE_DIR up -d && \
     for container in $(docker ps --format '{{.Names}}'); do
         ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container)
         echo "$container=$ip" | tr -d ' ' >> $INFO_INFRA
     done
 
-    token="$(docker exec jenkins-ansible-container cat /var/jenkins_home/secrets/initialAdminPassword 2>/dev/null)" 
+    echo "jenkins-initial-password=$(docker exec jenkins-ansible-container \
+        cat /var/jenkins_home/secrets/initialAdminPassword \
+        2>/dev/null)" >> $INFO_INFRA
 
-    echo "jenkins firstpass: $token"
-    # Recovery of initial Jenkins password
-    if [ -n "$token" ]; then
-        echo "jenkins_password_initial=$token" >> $INFO_INFRA
-    fi
+    echo "--------info_infra.txt--------"
+    awk '{print "   " $0}' $INFO_INFRA
 }
 
 destroy_() {
