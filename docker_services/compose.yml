@@ -29,7 +29,7 @@ services:
     volumes:
       - jenkins-data:/var/jenkins_home
       - jenkins-docker-certs:/certs/client:ro
-      - /home/notorious/dev/DevOps/ansible:/var/jenkins_home/ansible
+      - ../ansible:/var/jenkins_home/ansible
     restart: on-failure
     depends_on:
       - socat
