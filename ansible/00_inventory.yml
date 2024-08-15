@@ -7,11 +7,11 @@ all:
         
         nginx:
           hosts:
-            172.18.0.2:
+            172.19.0.2:
 
         webserver:
           hosts:
-            172.18.0.3:
+            172.19.0.3:
   
   vars:
     #ansible_python_interpreter: /usr/bin/python3
