@@ -25,7 +25,12 @@ run_() {
         echo "$container=$ip" | tr -d ' ' >> $INFO_INFRA
     done
 
-    echo "jenkins-initial-password=$(docker exec jenkins-ansible-container \
+    # Allow Jenkins user to write to the directory where artifacts will be stored
+    docker exec -u root jenkins-ansible-container chmod 777 \
+        /var/jenkins_home/ansible/roles/tomcat/files
+
+
+    sleep 10 && echo "jenkins-initial-password=$(docker exec jenkins-ansible-container \
         cat /var/jenkins_home/secrets/initialAdminPassword \
         2>/dev/null)" >> $INFO_INFRA
 

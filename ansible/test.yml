@@ -1,15 +1,119 @@
-all:
-  children:
-    servers:
-      children:
-        nginx:
-          hosts:
-            172.18.0.2: {}
-        webserver:
-          hosts:
-            172.18.0.3: {}
-  vars:
-    ansible_ssh_pass: rootpass
-    nginx_ip: 172.18.0.2
-    webserv_ip: 172.18.0.3
+pipeline {
+    
+    agent any
 
+    //options {
+        // This is required if you want to clean before build
+      //  skipDefaultCheckout(true)
+    //}
+    
+    tools { maven "M3" }
+    
+    //environment {
+    //}
+    
+    stages {
+        
+        stage('SCM checkout') {
+            
+            steps {
+                checkout scmGit(branches: [[name: '*/java_app']],
+                    extensions: [], 
+                    userRemoteConfigs: [[url: 'https://github.com/Jud42/ci_cd_infra.git']])
+                    //credentialsId: 'git-pat', 
+            }
+        }
+        
+        stage('Build') {
+            
+            steps {
+                script {
+                    env.APP_VERSION = sh(returnStdout: true,
+                        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout").trim()
+                    env.APP_ARTIFACT_ID = sh(returnStdout: true,
+                        script: "mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout").trim()
+                        
+                    sh "mvn -B versions:set -DnewVersion=${env.APP_VERSION}-${env.BUILD_ID}"
+                    
+                    env.APP_FINAL_NAME =  sh(returnStdout: true,
+                        script: "mvn help:evaluate -Dexpression=project.build.finalName -q -DforceStdout").trim()
+                }
+                
+                echo "final name of build package: ${env.APP_FINAL_NAME}"
+                sh "mvn -B -Dmaven.test.skip=true clean package"
+                stash name: "artifact", includes: "**/target/*.war"
+            }
+        }
+        
+        stage('Unit Tests') {  
+            
+            steps {
+                sh "mvn -B clean test"
+                stash name: "unit_tests", includes: "target/surefire-reports/**"
+            }
+        }
+        
+        stage('Integration Tests') {
+            
+            steps {
+                sh "mvn -B clean verify -Dsurefire.skip=true"
+                stash name: 'it_tests', includes: 'target/failsafe-reports/**'
+            }
+        }
+        
+        //stage('Static Analysis') {
+        //    
+        //    steps {
+        //        withSonarQubeEnv('sonar'){
+        //            unstash 'it_tests'
+        //            unstash 'unit_tests'
+        //            sh 'mvn sonar:sonar -DskipTests'
+        //        }
+        //    }
+        //}
+        
+        stage('Artifacts upload') {
+            steps {
+                unstash 'artifact'
+            }
+            
+            post {
+                
+                success {
+                    
+                    archiveArtifacts    artifacts: 'target/*.war',
+                                        allowEmptyArchive: true,
+                                        fingerprint: true,
+                                        onlyIfSuccessful: true
+                }
+            }
+        }
+        
+         stage('Trigger Deploy Job') {
+            when {
+                expression {
+                    return currentBuild.result == 'SUCCESS'
+                }
+            }
+            steps {
+                build   job: 'deploy_app',
+                        parameters: [string(name: 'BUILD_APP_ID', value: "${env.BUILD_ID}")]
+                //        string(name: 'APP_TAG', value: "${env.APP_FINAL_NAME}")
+                //    ])
+            }
+        }
+        
+    }
+    
+    post {
+            //Clean after build
+            always {
+                cleanWs(cleanWhenNotBuilt: false,
+                        deleteDirs: true,
+                        disableDeferredWipeout: true,
+                        notFailBuild: true,
+                        patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
+                                   [pattern: '.propsfile', type: 'EXCLUDE']])
+            }
+    }
+}

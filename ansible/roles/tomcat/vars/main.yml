@@ -5,7 +5,7 @@
 #version: "apache-tomcat-9.0.93"
 #url: "https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.93/bin/apache-tomcat-9.0.93.zip"
 #artifact: springtomcat.war
-artifact: demo-0.0.1-SNAPSHOT.war
+#artifact: demo-0.0.1-SNAPSHOT.war
 java_version: "java-17-openjdk-devel"
 version: "apache-tomcat-10.1.28"
 url: "https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.28/bin/apache-tomcat-10.1.28.zip"

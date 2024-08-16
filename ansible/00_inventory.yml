@@ -7,15 +7,14 @@ all:
         
         nginx:
           hosts:
-            172.19.0.2:
+            172.18.0.2:
 
         webserver:
           hosts:
-            172.19.0.3:
+            172.18.0.3:
   
   vars:
     #ansible_python_interpreter: /usr/bin/python3
     ansible_ssh_pass: "rootpass"
     nginx_ip: "172.18.0.2"
     webserv_ip: "172.18.0.3"
-    webserv_url: "http://172.18.0.3:8088/demo-0.0.1-SNAPSHOT/"

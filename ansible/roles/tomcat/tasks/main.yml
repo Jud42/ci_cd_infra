@@ -51,10 +51,23 @@
   #- { src: "web.xml.j2", dest: "{{ dir_conf }}/web.xml" }
   notify: reload_tomcat
 
+- name: Find old artifacts
+  find:
+    paths: "{{ dir_apps }}"
+    patterns: "{{ webserv_artifact_id }}*"
+  register: found_files
+
+- name: Remove old artifacts
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ found_files.files }}"
+  when: found_files.matched > 0
+
 - name: Copy war file for test
   copy:
-    src: "{{ artifact }}"
-    dest: "{{ dir_apps }}/{{ artifact }}"
+    src: "{{ webserv_artifact }}"
+    dest: "{{ dir_apps }}/{{ webserv_artifact }}"
 
 - name: Change mode +x catalina.sh
   file:
