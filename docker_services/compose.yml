@@ -47,6 +47,7 @@ services:
       - "8443:443"
     networks:
       - proxy
+    restart: on-failure
   
   webserv:
     build:
@@ -59,6 +60,7 @@ services:
       - proxy
     depends_on: 
       - nginx
+    restart: on-failure
 
 volumes:
   jenkins-data:
