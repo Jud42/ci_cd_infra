@@ -27,7 +27,7 @@ pipeline {
                                 filter: "target/${APP_TAG}.war",
                                 target: '.',
                                 fingerprintArtifacts: true
-                                selector: specific('${BUILD_APP_ID}')
+                                selector: specific("${BUILD_APP_ID}")
             }
         }
         
@@ -60,7 +60,6 @@ pipeline {
     post {
         //Clean after build
         always {
-
             cleanWs(cleanWhenNotBuilt: false,
                 deleteDirs: true,
                 disableDeferredWipeout: true,
@@ -77,4 +76,3 @@ pipeline {
         }
     }
 }
-
