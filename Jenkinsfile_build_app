@@ -2,16 +2,12 @@ pipeline {
     
     agent any
 
-    options {
+    //options {
         // This is required if you want to clean before build
-        skipDefaultCheckout(true)
-    }
+      //  skipDefaultCheckout(true)
+    //}
     
     tools { maven "M3" }
-
-    parameters {
-        string(name: 'BUILD_NUMBER', defaultValue: '', description: 'Build number of the first pipeline job')
-    }
     
     stages {
         
@@ -20,15 +16,28 @@ pipeline {
             steps {
                 checkout scmGit(branches: [[name: '*/java_app']],
                     extensions: [], 
-                    userRemoteConfigs: [[credentialsId: 'git-pat', url: 'https://github.com/Jud42/ci_cd_infra.git']])
+                    userRemoteConfigs: [[url: 'https://github.com/Jud42/ci_cd_infra.git']])
+                    //credentialsId: 'git-pat', 
             }
         }
         
         stage('Build') {
             
             steps {
+                script {
+                    env.APP_VERSION = sh(returnStdout: true,
+                        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout").trim()
+                    env.APP_ARTIFACT_ID = sh(returnStdout: true,
+                        script: "mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout").trim()
+                        
+                    sh "mvn -B versions:set -DnewVersion=${env.APP_VERSION}-${env.BUILD_ID}"
+                    
+                    env.APP_FINAL_NAME =  sh(returnStdout: true,
+                        script: "mvn help:evaluate -Dexpression=project.build.finalName -q -DforceStdout").trim()
+                }
+                
                 sh "mvn -B -Dmaven.test.skip=true clean package"
-                stash name: "artifact", includes: "**/target/*.war"
+                stash name: "artifact", includes: "target/*.war"
             }
         }
         
@@ -60,14 +69,13 @@ pipeline {
         //}
         
         stage('Artifacts upload') {
+            
             steps {
                 unstash 'artifact'
             }
             
             post {
-                
                 success {
-                    
                     archiveArtifacts    artifacts: 'target/*.war',
                                         allowEmptyArchive: true,
                                         fingerprint: true,
@@ -79,18 +87,25 @@ pipeline {
          stage('Trigger Deploy Job') {
             when {
                 expression {
-                    return currentBuild.result == 'SUCCESS'
+                    currentBuild.result == null || currentBuild.result == 'SUCCESS'
                 }
             }
             steps {
-                build job: 'deploy_app', parameters: [string(name: 'BUILD_APP_ID', value: "${env.BUILD_NUMBER}")]
+                build   job: 'deploy_app',
+                        parameters: [
+                            string(name: 'BUILD_APP_ID', value: "${env.BUILD_ID}"),
+                            string(name: 'APP_TAG', value: "${env.APP_FINAL_NAME}"),
+                            string(name: 'APP_ARTIFACT_ID', value: "${env.APP_ARTIFACT_ID}"),
+                        ],
+                        propagate: false,
+                        wait: true
             }
         }
         
     }
     
     post {
-            // Clean after build
+            //Clean after build
             always {
                 cleanWs(cleanWhenNotBuilt: false,
                         deleteDirs: true,

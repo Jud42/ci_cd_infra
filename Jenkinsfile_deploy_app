@@ -4,29 +4,75 @@ pipeline {
     
     parameters {
         string(name: 'BUILD_APP_ID', defaultValue: '', description: 'Build number of the build job')
+        string(name: 'APP_TAG', defaultValue: '', description: 'Final name of the build app')
+        string(name: 'APP_ARTIFACT_ID', defaultValue: '', description: 'ArtifactId of the build app')
     }
     
     environment {
-        ANSIBLE_PLAYBOOK_PATH = "${env.HOME}/ansible"
+        ANSIBLE_WORKSPACE = "${env.HOME}/ansible"
+        ANSIBLE_PLAYBOOK_PATH = "${env.HOME}/ansible/playbook.yml"
+        ANSIBLE_INVENTORY_PATH = "${env.HOME}/ansible/00_inventory.yml"
+        ANSIBLE_ARTIFACT_STORAGE = "${env.HOME}/ansible/roles/tomcat/files"
     }
+    
     stages {
         
         stage('Retrieve artifact') {
            
             steps {
+                echo "BUILD_ID ====> ${params.BUILD_APP_ID}"
+                echo "APP_TAG ====> ${params.APP_TAG}"
+                
                 copyArtifacts   projectName: 'build_app',
-                                filter: 'target/demo-0.0.1-SNAPSHOT.war',
-                                target: 'target/',
+                                filter: "target/${APP_TAG}.war",
+                                target: '.',
                                 fingerprintArtifacts: true
-                                selector: specific('${FIRST_PIPELINE_BUILD_NUMBER}')
+                                selector: specific('${BUILD_APP_ID}')
             }
         }
         
         stage('Deploy') {
             
             steps {
-                echo "path to home ===> ${ANSIBLE_PLAYBOOK_PATH}"
-                sh "cp *.war ${ANSIBLE_PLAYBOOK_PATH/ro}"
+                
+                script {
+                    
+                    def exitCode = sh(script: "ls ${ANSIBLE_ARTIFACT_STORAGE}/*.war 1>/dev/null 2>&1",
+                        returnStatus: true)
+                    if (exitCode == 1) { 
+                        sh "cp target/${params.APP_TAG}.war ${ANSIBLE_ARTIFACT_STORAGE}/"
+                    }
+                    else {
+                        sh "rm -f ${ANSIBLE_ARTIFACT_STORAGE}/*.war && cp target/${params.APP_TAG}.war ${ANSIBLE_ARTIFACT_STORAGE}/"
+                    }
+                }
+                
+                ansiblePlaybook(
+                    playbook: "${ANSIBLE_PLAYBOOK_PATH}",
+                    inventory: "${ANSIBLE_INVENTORY_PATH}",
+                    extras: "-e webserv_context=${params.APP_TAG}/ -e webserv_artifact=${params.APP_TAG}.war -e webserv_artifact_id=${params.APP_ARTIFACT_ID}"
+                    //colorized: true
+                )
+            }
+        }
+    }
+    
+    post {
+        //Clean after build
+        always {
+
+            cleanWs(cleanWhenNotBuilt: false,
+                deleteDirs: true,
+                disableDeferredWipeout: true,
+                notFailBuild: true,
+                patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
+                           [pattern: '.propsfile', type: 'EXCLUDE']])
+        }
+            
+        success {
+            script {
+                def link = "https://localhost:8443"
+                echo "Here is the link to access the deployed app: ${link}"
             }
         }
     }
