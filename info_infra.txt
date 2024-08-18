@@ -1,5 +1,0 @@
-webserv-container=172.18.0.3
-jenkins-ansible-container=172.19.0.3
-nginx-container=172.18.0.2
-socat-container=172.19.0.2
-jenkins-initial-password=
