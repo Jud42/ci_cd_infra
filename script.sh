@@ -11,6 +11,7 @@ print_help() {
     echo "  --create        Start Docker containers and record their IP addresses."
     echo "  --destroy       Stop Docker containers and remove the info_infra.txt file."
     echo "  --destroy-all   Stop Docker containers, remove all images and volumes, and delete the info_infra.txt file."
+    echo "  --get-pass	    This option retrieves the initial administrator password for Jenkins."
     echo "  --help          Display this help message."
 }
 
@@ -28,12 +29,7 @@ run_() {
     # Allow Jenkins user to write to the directory where artifacts will be stored
     docker exec -u root jenkins-ansible-container chmod 777 \
         /var/jenkins_home/ansible/roles/tomcat/files
-
-
-    sleep 10 && echo "jenkins-initial-password=$(docker exec jenkins-ansible-container \
-        cat /var/jenkins_home/secrets/initialAdminPassword \
-        2>/dev/null)" >> $INFO_INFRA
-
+   
     echo "--------info_infra.txt--------"
     awk '{print "   " $0}' $INFO_INFRA
 }
@@ -52,6 +48,17 @@ destroy_all_() {
     fi
 }
 
+get_jenkinsInitialPass_() {
+
+	pass=$(docker exec jenkins-ansible-container \
+		cat /var/jenkins_home/secrets/initialAdminPassword 2>/dev/null)
+	if [ "$pass" = ""]; then
+		echo "The password has already been initialized or the container is not ready!"
+	else
+		echo "$pass"
+	fi
+}
+
 if [ $# -eq 1 ]; then
     case "$1" in 
         "--create")
@@ -63,6 +70,9 @@ if [ $# -eq 1 ]; then
         "--destroy-all")
             destroy_all_
             ;;
+	"--get-pass")
+	    get_jenkinsInitialPass_
+	    ;;
         "--help")
             print_help
             ;;
