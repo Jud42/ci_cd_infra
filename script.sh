@@ -1,7 +1,12 @@
 #!/bin/sh
 
 COMPOSE_DIR="./docker_services/compose.yml"
+INVENTORY_PATH="ansible/00_inventory.yml"
 INFO_INFRA="info_containers.txt"
+NGINX_CONTAINER="nginx-container"
+WEBSERV_CONTAINER="webserv-container"
+
+
 token=""
 
 print_help() {
@@ -13,6 +18,34 @@ print_help() {
     echo "  --destroy-all   Stop Docker containers, remove all images and volumes, and delete the info_containers.txt file."
     echo "  --get-pass	    This option retrieves the initial administrator password for Jenkins."
     echo "  --help          Display this help message."
+}
+
+generator_inventory() {
+
+    nginx_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $NGINX_CONTAINER)
+    webserv_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $WEBSERV_CONTAINER)
+
+    cat << EOF > $INVENTORY_PATH
+    all:
+      children:
+      
+        #serveur RHEL
+        servers:
+          children:
+            nginx:
+              hosts:
+                ${nginx_ip}:
+                
+            webserver:
+              hosts:
+                ${webserv_ip}:
+  
+      vars:
+        #ansible_python_interpreter: /usr/bin/python3
+        ansible_ssh_pass: "rootpass"
+        nginx_ip: ${nginx_ip}
+        webserv_ip: ${webserv_ip}
+EOF
 }
 
 run_() {
@@ -29,6 +62,9 @@ run_() {
     # Allow Jenkins user to write to the directory where artifacts will be stored
     docker exec -u root jenkins-ansible-container chmod 777 \
         /var/jenkins_home/ansible/roles/tomcat/files
+    
+    # create inventory file
+    generator_inventory
    
     echo "--------info_infra.txt--------"
     awk '{print "   " $0}' $INFO_INFRA
