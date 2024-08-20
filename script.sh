@@ -1,7 +1,7 @@
 #!/bin/sh
 
 COMPOSE_DIR="./docker_services/compose.yml"
-INFO_INFRA="info_infra.txt"
+INFO_INFRA="info_containers.txt"
 token=""
 
 print_help() {
@@ -52,7 +52,7 @@ get_jenkinsInitialPass_() {
 
 	pass=$(docker exec jenkins-ansible-container \
 		cat /var/jenkins_home/secrets/initialAdminPassword 2>/dev/null)
-	if [ "$pass" = ""]; then
+	if [ "$pass" = "" ]; then
 		echo "The password has already been initialized or the container is not ready!"
 	else
 		echo "$pass"
