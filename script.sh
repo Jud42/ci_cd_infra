@@ -9,8 +9,8 @@ print_help() {
     echo
     echo "Options:"
     echo "  --create        Start Docker containers and record their IP addresses."
-    echo "  --destroy       Stop Docker containers and remove the info_infra.txt file."
-    echo "  --destroy-all   Stop Docker containers, remove all images and volumes, and delete the info_infra.txt file."
+    echo "  --destroy       Stop Docker containers and remove the info_containers.txt file."
+    echo "  --destroy-all   Stop Docker containers, remove all images and volumes, and delete the info_containers.txt file."
     echo "  --get-pass	    This option retrieves the initial administrator password for Jenkins."
     echo "  --help          Display this help message."
 }
