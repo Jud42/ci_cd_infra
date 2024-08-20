@@ -1,3 +1,0 @@
-webserv-container=172.18.0.3
-jenkins-ansible-container=172.19.0.2
-nginx-container=172.18.0.2
