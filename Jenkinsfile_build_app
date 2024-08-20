@@ -25,6 +25,8 @@ pipeline {
             
             steps {
                 script {
+                    env.JAVA_VERSION = sh(returnStdout: true,
+                        script: "mvn help:evaluate -Dexpression=java.version -q -DforceStdout | awk -F. '{print $1}'")
                     env.APP_VERSION = sh(returnStdout: true,
                         script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout").trim()
                     env.APP_ARTIFACT_ID = sh(returnStdout: true,
@@ -96,6 +98,7 @@ pipeline {
                             string(name: 'BUILD_APP_ID', value: "${env.BUILD_ID}"),
                             string(name: 'APP_TAG', value: "${env.APP_FINAL_NAME}"),
                             string(name: 'APP_ARTIFACT_ID', value: "${env.APP_ARTIFACT_ID}"),
+                            string(name: 'JAVA_VERSION', value: "${env.JAVA_VERSION}"),
                         ],
                         propagate: false
                         //wait: true

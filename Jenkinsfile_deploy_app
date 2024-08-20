@@ -6,6 +6,7 @@ pipeline {
         string(name: 'BUILD_APP_ID', defaultValue: '', description: 'Build number of the build job')
         string(name: 'APP_TAG', defaultValue: '', description: 'Final name of the build app')
         string(name: 'APP_ARTIFACT_ID', defaultValue: '', description: 'ArtifactId of the build app')
+        string(name: 'JAVA_VERSION', defaultValue: '', description: 'Java version for compilation')
     }
     
     environment {
@@ -50,7 +51,11 @@ pipeline {
                 ansiblePlaybook(
                     playbook: "${ANSIBLE_PLAYBOOK_PATH}",
                     inventory: "${ANSIBLE_INVENTORY_PATH}",
-                    extras: "-e webserv_context=${params.APP_TAG}/ -e webserv_artifact=${params.APP_TAG}.war -e webserv_artifact_id=${params.APP_ARTIFACT_ID}"
+                    extras: """ -e webserv_context=${params.APP_TAG}/ 
+                                -e webserv_artifact=${params.APP_TAG}.war
+                                -e webserv_artifact_id=${params.APP_ARTIFACT_ID}
+                                -e java_version=${params.JAVA_VERSION}
+                            """
                     //colorized: true
                 )
             }
