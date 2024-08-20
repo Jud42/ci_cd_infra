@@ -45,7 +45,7 @@ git clone https://github.com/Jud42/ci_cd_infra.git
 #### Add maven
 **Manage Jenkins => Tools => Maven installations => add maven**
 
-![Maven Installation](.assets/Pasted\ image\ 240820200347.png)
+[[https://github.com/Jud42/ci_cd_infra/dev/.assets/Pasted%20image%20240820200347.png|alt=Maven Installation]]
 
 #### Add jobs
 ##### build_app
