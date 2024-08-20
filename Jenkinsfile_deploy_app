@@ -26,8 +26,8 @@ pipeline {
                 copyArtifacts   projectName: 'build_app',
                                 filter: "**/target/${APP_TAG}.war",
                                 target: '.',
-                                fingerprintArtifacts: true
-                                selector: specific("${BUILD_APP_ID}")
+                                fingerprintArtifacts: true,
+                                selector: upstream()
             }
         }
         
