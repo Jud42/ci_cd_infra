@@ -11,15 +11,15 @@ pipeline {
     
     stages {
         
-        stage('SCM checkout') {
+        // stage('SCM checkout') {
             
-            steps {
-                checkout scmGit(branches: [[name: '*/java_app']],
-                    extensions: [], 
-                    userRemoteConfigs: [[url: 'https://github.com/Jud42/ci_cd_infra.git']])
-                    //credentialsId: 'git-pat', 
-            }
-        }
+        //     steps {
+        //         checkout scmGit(branches: [[name: '*/java_app']],
+        //             extensions: [], 
+        //             userRemoteConfigs: [[url: 'https://github.com/Jud42/ci_cd_infra.git']])
+        //             //credentialsId: 'git-pat', 
+        //     }
+        // }
         
         stage('Build') {
             
