@@ -28,7 +28,7 @@ pipeline {
                                 filter: "target/${params.APP_TAG}.war",
                                 target: '.',
                                 fingerprintArtifacts: true,
-                                selector: upstream()
+                                selector: specific("${params.BUILD_APP_ID}")
             }
         }
         
