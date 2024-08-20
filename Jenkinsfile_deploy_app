@@ -24,7 +24,7 @@ pipeline {
                 echo "APP_TAG ====> ${params.APP_TAG}"
                 
                 copyArtifacts   projectName: 'build_app',
-                                filter: "target/${APP_TAG}.war",
+                                filter: "**/target/${APP_TAG}.war",
                                 target: '.',
                                 fingerprintArtifacts: true
                                 selector: specific("${BUILD_APP_ID}")
