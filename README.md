@@ -43,7 +43,7 @@ git clone https://github.com/Jud42/ci_cd_infra.git
 > Copy paste the admin initial pass
 
 #### Add maven
-**Manage Jenkins => Tools => Maven installations => add maven**
+**Manage Jenkins => Tools => Maven installations => Add Maven**
 
 ![Maven installations](https://github.com/Jud42/ci_cd_infra/blob/dev/.assets/Pasted%20image%2020240820195840.png)
 
