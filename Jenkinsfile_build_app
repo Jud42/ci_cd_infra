@@ -97,8 +97,8 @@ pipeline {
                             string(name: 'APP_TAG', value: "${env.APP_FINAL_NAME}"),
                             string(name: 'APP_ARTIFACT_ID', value: "${env.APP_ARTIFACT_ID}"),
                         ],
-                        propagate: false,
-                        wait: true
+                        propagate: false
+                        //wait: true
             }
         }
         
