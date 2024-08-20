@@ -24,47 +24,48 @@ This project automates the setup of a CI/CD pipeline using #Jenkins, #Ansible, a
 * Docker and Docker Compose installed on your machine
 
 ### Part one
-#### clone the repository
+#### Clone the repository
 ```shell
 git clone https://github.com/Jud42/ci_cd_infra.git
 ```
-#### create the environment
+#### Create the containers
 ```shell
 ./script --create
 ```
 
 ### Part two
-#### take the admin initial password of jenkins
+#### Retrieve the initial admin password for Jenkins
 ```shell
 ./script --get-pass
 ```
-#### Open jenkins on the localhost and register admin account
+#### Open Jenkins on localhost and create an admin account
 **Jenkins URL =>** http://localhost:8082
 > Copy paste the admin initial pass
+
 #### Add maven
 **Manage Jenkins => Tools => Maven installations => add maven**
-
-![[Pasted image 20240820200347.png]]
+![Maven Installation](./assets/Pasted%20image%20240820200347.png)
 
 #### Add jobs
 ##### build_app
 **New Item**
-	Name: build_app
-	Type: pipeline
-		Definition: Pipeline script from SCM
-		SCM: git
-			Repository URL: https://github.com/Jud42/ci_cd_infra.git
-			 Branches to build: \*/java_app
-		 Script Path: Jenkinsfile_build_app
+Name: build_app
+Type: pipeline
+Definition: Pipeline script from SCM
+SCM: git
+Repository URL: https://github.com/Jud42/ci_cd_infra.git
+Branches to build: \*/java_app
+Script Path: Jenkinsfile_build_app
+
 ##### deploy_app
 **New Item**
-	Name: deploy_app
-	Type: pipeline
-		Definition: Pipeline script from SCM
-		SCM: git
-			Repository URL: https://github.com/Jud42/ci_cd_infra.git
-			 Branches to build: \*/java_app
-		 Script Path: Jenkinsfile_deploy_app
+Name: deploy_app
+Type: pipeline
+Definition: Pipeline script from SCM
+SCM: git
+Repository URL: https://github.com/Jud42/ci_cd_infra.git
+Branches to build: \*/java_app
+Script Path: Jenkinsfile_deploy_app
 
 ## Project Structure
 ```bash
@@ -176,4 +177,3 @@ git clone https://github.com/Jud42/ci_cd_infra.git
 ├── README.md  
 └── script.sh
 ```
-
