@@ -3,7 +3,7 @@
 
 - name: Installation requires packages
   yum: 
-    name: wget, unzip, {{ java_version }}, vim
+    name: wget, unzip, "java-{{ java_version }}-openjdk-devel", vim
     state: present
     update_cache: true
 
