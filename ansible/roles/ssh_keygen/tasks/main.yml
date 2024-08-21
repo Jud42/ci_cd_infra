@@ -1,0 +1,24 @@
+---
+
+- name: Ensure .ssh directory exists
+  file:
+    path: "{{ home }}/.ssh"
+    state: directory
+    mode: '0700'
+
+- name: generate SSH ssh_keygen
+  openssh_keypair:
+    path: "{{ home }}/.ssh/id_rsa"
+    type: rsa
+    size: 4096
+    state: present
+    force: no
+
+- name: Tell the host about our servers it might want to ssh to
+  known_hosts:
+    path: "{{ home }}/.ssh/known_hosts"
+    name: "{{ item }}"
+    key: "{{ lookup('pipe', 'ssh-keyscan -H ' + item) }}"
+  with_items: 
+  - "{{ nginx_ip }}"
+  - "{{ webserv_ip }}"

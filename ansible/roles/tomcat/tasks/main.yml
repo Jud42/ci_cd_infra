@@ -1,0 +1,93 @@
+---
+# tasks file for ansible/roles/tomcat
+
+- name: Installation requires packages
+  yum: 
+    name: wget, unzip, java-{{ java_version }}-openjdk-devel, vim
+    state: present
+    update_cache: true
+
+- name: Download tomcat
+  get_url:
+    url: "{{ url }}"
+    dest: "/tmp/{{ version }}.zip"
+    #mode: '0440'
+  register: tomcat_package
+
+- name: "Extract {{ version }}.zip"
+  unarchive:
+    src: "/tmp/{{ version }}.zip"
+    dest: "/tmp/"
+    remote_src: yes
+
+- name: Create installation directory
+  file:
+    path: "{{ dir_installation }}"
+    state: directory
+    recurse: yes
+    mode: '0700'
+
+- name: Check if dir installation is empty
+  stat:
+    path: "{{ dir_exec }}"
+  register: dir
+    
+- name: Move content extracted to the dir installation
+  shell: "cp -rf /tmp/{{ version }}/* {{ dir_installation }}/"
+  when: not dir.stat.exists
+
+- name: Set config hostmanager dir_hostmanager_context
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    #owner: root
+    #group: root
+    #mode: 0644
+  with_items:
+  - { src: "context.xml.j2", dest: "{{ dir_hostmanager_context }}/context.xml" }
+  - { src: "context.xml.j2", dest: "{{ dir_manager_context }}/context.xml" }
+  - { src: "tomcat-users.xml.j2", dest: "{{ dir_conf }}/tomcat-users.xml" }
+  - { src: "server.xml.j2", dest: "{{ dir_conf }}/server.xml" }
+  #- { src: "web.xml.j2", dest: "{{ dir_conf }}/web.xml" }
+  notify: reload_tomcat
+
+- name: Find old artifacts
+  find:
+    paths: "{{ dir_apps }}"
+    patterns: "{{ webserv_artifact_id }}*"
+  register: found_files
+
+- name: Remove old artifacts
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ found_files.files }}"
+  when: found_files.matched > 0
+
+- name: Copy war file for test
+  copy:
+    src: "{{ webserv_artifact }}"
+    dest: "{{ dir_apps }}/{{ webserv_artifact }}"
+
+- name: Change mode +x catalina.sh
+  file:
+    path: "{{ dir_exec }}/{{ item }}"
+    state: file
+    mode: '0755'
+  with_items:
+    - catalina.sh 
+    - startup.sh
+    - shutdown.sh
+
+- name: Start tomcat
+  shell: "./catalina.sh 2> /dev/null; nohup ./catalina.sh run &"
+  args:
+    chdir: "{{ dir_exec }}"
+    executable: "/bin/sh"
+  when: tomcat_package.changed
+
+- name: Flush handlers
+  meta: flush_handlers
+  
+  
+    

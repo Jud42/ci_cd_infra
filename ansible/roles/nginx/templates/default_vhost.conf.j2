@@ -1,0 +1,32 @@
+
+server {
+    listen {{ nginx_port }} default_server;
+    listen  [::]:{{ nginx_port }} default_server;
+    server_name localhost;
+
+    return 301 https://$host$request_uri;
+}
+
+
+server {
+
+    listen  443 ssl;
+    listen  [::]:443 ssl;
+
+    server_name localhost;
+
+    ssl_certificate {{ cert_dir }}/{{ cert_name }}.pem;
+    ssl_certificate_key {{ pkey_dir }}/{{ pkey_name }}.key;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    location  / {
+        proxy_pass  http://{{ webserv_ip }}:{{ webserv_port }}/{{ webserv_context }};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

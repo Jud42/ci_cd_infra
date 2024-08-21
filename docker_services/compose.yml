@@ -1,0 +1,88 @@
+services:
+
+  # socat:
+  #   image: alpine/socat
+  #   container_name: socat-container
+  #   networks:
+  #     - jenkins
+  #   ports:
+  #     - "127.0.0.1:2376:2375"
+  #   volumes:
+  #     - /run/user/1000/docker.sock:/var/run/docker.sock
+  #   command: TCP-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock
+  #   restart: always
+      
+  jenkins:
+    container_name: jenkins-ansible-container
+    build:
+      context: jenkins-ansible/
+      dockerfile: Dockerfile
+    networks:
+      - jenkins
+    environment:
+      - DOCKER_HOST=tcp://socat-container:2375
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+    ports:
+      - "8082:8080"
+      - "50000:50000"
+    user: "1000:1000"
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client:ro
+      - ../ansible:/var/jenkins_home/ansible
+    restart: on-failure
+    # depends_on:
+    #   - socat
+
+  nginx:
+    build:
+      context: nginx-reverse/
+      dockerfile: Dockerfile
+    container_name: nginx-container
+    expose:
+      - "22"
+    ports:
+      - "8080:8080"
+      - "8443:443"
+    networks:
+      - proxy
+    restart: on-failure
+  
+  webserv:
+    build:
+      context: tomcat-webserv/
+      dockerfile: Dockerfile
+    container_name: webserv-container
+    expose:
+      - "22"
+    networks:
+      - proxy
+    depends_on: 
+      - nginx
+    restart: on-failure
+
+volumes:
+  jenkins-data:
+  jenkins-docker-certs:
+
+networks:
+  jenkins:
+    driver: bridge
+  proxy:
+    driver: bridge
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
