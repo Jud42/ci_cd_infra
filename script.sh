@@ -66,10 +66,11 @@ run_() {
     # create inventory file
     generator_inventory
    
-    echo "--------info_infra.txt--------"
+    echo "--------info_containers.txt--------"
     awk '{print "   " $0}' $INFO_INFRA
+    echo "-----------------------------------"
 
-    echo "\n$JENKINS_URL"
+    echo -e "\n   Jenkins URL: $JENKINS_URL"
 }
 
 destroy_() {
