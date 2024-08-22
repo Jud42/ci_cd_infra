@@ -46,7 +46,7 @@ services:
       - "8080:8080"
       - "8443:443"
     networks:
-      - proxy
+      - jenkins
     restart: on-failure
   
   webserv:
@@ -57,7 +57,7 @@ services:
     expose:
       - "22"
     networks:
-      - proxy
+      - jenkins
     depends_on: 
       - nginx
     restart: on-failure
@@ -69,10 +69,6 @@ volumes:
 networks:
   jenkins:
     driver: bridge
-  proxy:
-    driver: bridge
-
-
 
 
 
